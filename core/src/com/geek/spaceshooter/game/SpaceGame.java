@@ -68,5 +68,6 @@ public class SpaceGame extends Game {
     @Override
     public void dispose() {
         batch.dispose();
+        ScoreManager.getInstance().disconnect();
     }
 }

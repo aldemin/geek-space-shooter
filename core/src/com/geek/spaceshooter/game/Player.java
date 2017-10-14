@@ -36,6 +36,10 @@ public class Player extends Ship {
         return lives;
     }
 
+    public int getScore() {
+        return score;
+    }
+
     public void addScore(int amount) {
         score += amount;
     }

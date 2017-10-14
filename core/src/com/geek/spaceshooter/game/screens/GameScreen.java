@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.geek.spaceshooter.game.Assets;
@@ -21,10 +23,13 @@ import com.geek.spaceshooter.game.BotEmitter;
 import com.geek.spaceshooter.game.Bullet;
 import com.geek.spaceshooter.game.BulletEmitter;
 import com.geek.spaceshooter.game.LevelInfo;
+import com.geek.spaceshooter.game.MyInputProcessor;
 import com.geek.spaceshooter.game.ParticleEmitter;
 import com.geek.spaceshooter.game.Player;
 import com.geek.spaceshooter.game.PowerUp;
 import com.geek.spaceshooter.game.PowerUpsEmitter;
+import com.geek.spaceshooter.game.ScoreManager;
+import com.geek.spaceshooter.game.SpaceGame;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,11 +54,15 @@ public class GameScreen implements Screen {
     private BoomEmitter boomEmitter;
     private BotEmitter botEmitter;
     private TextureAtlas atlas;
+    private TextureRegion textureBack;
+    private Rectangle rectBack;
     private Music music;
     private int level;
     private int maxLevels;
     private float timePerLevel;
     private float currentLevelTime;
+
+    private MyInputProcessor mip;
 
     List<LevelInfo> levels;
     List<Integer> scores;
@@ -79,11 +88,6 @@ public class GameScreen implements Screen {
     }
 
     public void loadFullGameInfo() {
-        this.loadLevelInfo();
-        this.loadScore();
-    }
-
-    private void loadLevelInfo() {
         levels = new ArrayList<LevelInfo>();
         BufferedReader br = null;
         try {
@@ -100,59 +104,6 @@ public class GameScreen implements Screen {
             maxLevels = levels.size();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                br.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void loadScore() {
-        this.scores = new ArrayList<Integer>();
-        BufferedReader br = null;
-        try {
-            br = Gdx.files.internal("score.csv").reader(8192);
-            br.readLine();
-            while (br.ready()) {
-                this.scores.add(Integer.parseInt(br.readLine()));
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                br.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void saveScore() {
-        Writer w = null;
-        try {
-
-            w =  Gdx.files.internal("score.csv").writer(false);
-            StringBuilder sb = new StringBuilder();
-            sb.append("SCORE\n");
-            for (int i = 0; i < this.scores.size(); i++) {
-                sb.append(this.scores.get(i));
-                if (i != this.scores.size() - 1) {
-                    sb.append("\n");
-                }
-            }
-
-            w.write(sb.chars);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                w.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -179,8 +130,12 @@ public class GameScreen implements Screen {
         level = 1;
         currentLevelTime = 0.0f;
         timePerLevel = 60.0f;
-        // music.play();
+        music.play();
+        this.textureBack = this.atlas.findRegion("btBack");
+        this.rectBack = new Rectangle(SpaceGame.SCREEN_WIDTH - 135, SpaceGame.SCREEN_HEIGHT - 115, this.textureBack.getRegionWidth(), this.textureBack.getRegionHeight());
+        mip = (MyInputProcessor) Gdx.input.getInputProcessor();
     }
+
 
     @Override
     public void render(float delta) {
@@ -201,6 +156,7 @@ public class GameScreen implements Screen {
         boomEmitter.render(batch);
         particleEmitter.render(batch);
         player.renderHUD(batch, fnt, 20, 668);
+        batch.draw(textureBack, rectBack.x, rectBack.y);
         fnt.draw(batch, "LEVEL: " + level, 600, 680);
         batch.end();
     }
@@ -217,6 +173,10 @@ public class GameScreen implements Screen {
 
     public void update(float dt) {
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            ScreenManager.getInstance().goToScreen(ScreenType.MENU);
+        }
+        if (mip.isTouchedInArea(rectBack) != -1) {
+            ScoreManager.getInstance().saveAndGetPos(this.player.getScore());
             ScreenManager.getInstance().goToScreen(ScreenType.MENU);
         }
         updateLevel(dt);

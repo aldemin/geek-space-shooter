@@ -39,6 +39,7 @@ public class Assets {
             case MENU:
                 assetManager.load("my.pack", TextureAtlas.class);
                 assetManager.load("bg.png", Texture.class);
+                assetManager.load("font2.fnt", BitmapFont.class);
                 assetManager.finishLoading();
                 mainAtlas = assetManager.get("my.pack", TextureAtlas.class);
                 break;
@@ -49,6 +50,13 @@ public class Assets {
                 assetManager.load("music.mp3", Music.class);
                 assetManager.load("laser.wav", Sound.class);
                 assetManager.load("CollapseNorm.wav", Sound.class);
+                assetManager.finishLoading();
+                mainAtlas = assetManager.get("my.pack", TextureAtlas.class);
+                break;
+            case HALL_OF_FAME:
+                assetManager.load("scoreFont.fnt", BitmapFont.class);
+                assetManager.load("my.pack", TextureAtlas.class);
+                assetManager.load("bg.png", Texture.class);
                 assetManager.finishLoading();
                 mainAtlas = assetManager.get("my.pack", TextureAtlas.class);
                 break;
